@@ -60,7 +60,7 @@ jobs:
               ;;
             ubuntu*)
               sudo snap install snapcraft --classic
-              npx electron-builder --linux appimage --x64 --publish never
+              npx electron-builder --linux appimage --x64 --publish always
               ;;
             windows*)
               unset CSC_LINK;
