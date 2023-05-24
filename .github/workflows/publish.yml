@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # os: [ macos-latest, ubuntu-latest, windows-latest ]
-        os: [ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Check out Git repository
@@ -56,44 +56,43 @@ jobs:
             macos*)
               mkdir -p ~/.private_keys
               echo '${{ secrets.API_KEY }}' > ~/.private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
-              npx electron-builder --mac --universal --publish always
+              npx electron-builder --mac --universal --publish never
               ;;
             ubuntu*)
               sudo snap install snapcraft --classic
-              npx electron-builder --linux appimage --x64 --publish always
-              npx electron-builder --linux snap --x64 --publish always
+              npx electron-builder --linux appimage --x64 --publish never
               ;;
             windows*)
               unset CSC_LINK;
               unset CSC_KEY_PASSWORD;
-              npx electron-builder --win --x64 --arm64 --publish always
+              npx electron-builder --win --x64 --arm64 --publish never
               ;;
           esac
 
-      - if: startsWith(matrix.os, 'ubuntu')
-        name: Publish Python
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.pypi_api_token }}
-        run: npm run publish python
+      # - if: startsWith(matrix.os, 'ubuntu')
+      #   name: Publish Python
+      #   env:
+      #     TWINE_USERNAME: __token__
+      #     TWINE_PASSWORD: ${{ secrets.pypi_api_token }}
+      #   run: npm run publish python
 
-      - if: startsWith(matrix.os, 'ubuntu')
-        name: Publish Web
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
-          GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
-        run: npm run publish web
+      # - if: startsWith(matrix.os, 'ubuntu')
+      #   name: Publish Web
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+      #     GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
+      #   run: npm run publish web
 
-      - if: startsWith(matrix.os, 'macos')
-        name: Publish cask
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
-          GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
-        run: npm run publish cask
+      # - if: startsWith(matrix.os, 'macos')
+      #   name: Publish cask
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+      #     GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
+      #   run: npm run publish cask
 
-      - if: startsWith(matrix.os, 'windows')
-        name: Publish winget
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
-          GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
-        run: npm run publish winget
+      # - if: startsWith(matrix.os, 'windows')
+      #   name: Publish winget
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+      #     GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
+      #   run: npm run publish winget
