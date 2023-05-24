@@ -187,7 +187,7 @@ mnn.Node = class {
                 const kernelY = common.kernelY;
                 if (param.convolution2d_superacme) {
                     if (common.group == outputCount) {
-                        // Depthwise                        
+                        // Depthwise                   
                         if (param.convolution2d_superacme.weightType == mnn.schema.DataType.DT_INT8) {
                             this._buildTensor('weight', mnn.schema.DataType.DT_INT8, [ outputCount, 1, kernelX, kernelY ], param.quanParameter.buffer, "Weight");
                         } else if (param.convolution2d_superacme.weightType == mnn.schema.DataType.DT_INT4) {
@@ -198,6 +198,8 @@ mnn.Node = class {
                             this._buildTensor('weight', mnn.schema.DataType.DT_INT8, [ outputCount, inputCount, kernelX, kernelY ], param.quanParameter.buffer, "Weight");
                         } else if (param.convolution2d_superacme.weightType == mnn.schema.DataType.DT_INT4) {
                             this._buildTensor('weight', mnn.schema.DataType.DT_INT4, [ outputCount, inputCount, kernelX, kernelY ], param.quanParameter.buffer, "Weight");
+                        } else {
+                            this._buildTensor('weight', mnn.schema.DataType.DT_FLOAT, [ outputCount, inputCount, kernelX, kernelY ], param.weight, "Weight");
                         }
                     }
                     this._buildTensor('bias', mnn.schema.DataType.DT_INT32, [ outputCount ], param.convolution2d_superacme.mintbias, "Bias");
@@ -272,14 +274,14 @@ mnn.Node = class {
 
     // appending the quantization of input/outputs into _attributes
     _getQuantInfo(net_, op) {
-        let allQuantRecords = new mnn.NodeQuantInfo();
+        const allQuantRecords = new mnn.NodeQuantInfo();
 
         if (net_.extraTensorDescribe.length > 0) {
             for (var i=0;i<op.inputIndexes.length;i++) {
                 var index = net_.extraTensorDescribe.findIndex((element) => element.index === op.inputIndexes[i]);
                 if (index >= 0) {
                     const metaQuantInfo = net_.extraTensorDescribe[index].quantInfo;
-                    let obj = new Object();
+                    const obj = new Object();
                     obj.name = net_.extraTensorDescribe[index].name;
                     obj.qinfo = {};
                     // obj.qinfo.dtype = mnn.Utility.dataType(metaQuantInfo.type);
@@ -292,12 +294,12 @@ mnn.Node = class {
                 }
             }
 
-            for (var i=0;i<op.outputIndexes.length;i++) {
-                var index = net_.extraTensorDescribe.findIndex((element) => element.index === op.outputIndexes[i]);
-                if (index >= 0) {
-                    const metaQuantInfo = net_.extraTensorDescribe[index].quantInfo;
-                    let obj = new Object();
-                    obj.name = net_.extraTensorDescribe[index].name;
+            for (var o=0;o<op.outputIndexes.length;o++) {
+                var index_o = net_.extraTensorDescribe.findIndex((element) => element.index === op.outputIndexes[o]);
+                if (index_o >= 0) {
+                    const metaQuantInfo = net_.extraTensorDescribe[index_o].quantInfo;
+                    const obj = new Object();
+                    obj.name = net_.extraTensorDescribe[index_o].name;
                     obj.qinfo = {};
                     // obj.qinfo.dtype = mnn.Utility.dataType(metaQuantInfo.type);
                     obj.qinfo.realtype = mnn.Utility.dataType(metaQuantInfo.realtype);
@@ -509,7 +511,7 @@ mnn.NodeQuantInfo = class {
         this.q_inputs = [];
         this.q_outputs = [];
     }
-}
+};
 
 mnn.TensorShape = class {
 
