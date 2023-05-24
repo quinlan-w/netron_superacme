@@ -281,16 +281,18 @@ mnn.Node = class {
                 var index = net_.extraTensorDescribe.findIndex((element) => element.index === op.inputIndexes[i]);
                 if (index >= 0) {
                     const metaQuantInfo = net_.extraTensorDescribe[index].quantInfo;
-                    const obj = new Object();
-                    obj.name = net_.extraTensorDescribe[index].name;
-                    obj.qinfo = {};
-                    // obj.qinfo.dtype = mnn.Utility.dataType(metaQuantInfo.type);
-                    obj.qinfo.realtype = mnn.Utility.dataType(metaQuantInfo.realtype);
-                    obj.qinfo.scale = metaQuantInfo.scale;
-                    obj.qinfo.zero  = metaQuantInfo.zero;
-                    obj.qinfo.max   = metaQuantInfo.max;
-                    obj.qinfo.min   = metaQuantInfo.min;
-                    allQuantRecords.q_inputs.push(obj);
+                    if (metaQuantInfo) {
+                        const obj = new Object();
+                        obj.name = net_.extraTensorDescribe[index].name;
+                        obj.qinfo = {};
+                        // obj.qinfo.dtype = mnn.Utility.dataType(metaQuantInfo.type);
+                        obj.qinfo.realtype = mnn.Utility.dataType(metaQuantInfo.realtype);
+                        obj.qinfo.scale = metaQuantInfo.scale;
+                        obj.qinfo.zero  = metaQuantInfo.zero;
+                        obj.qinfo.max   = metaQuantInfo.max;
+                        obj.qinfo.min   = metaQuantInfo.min;
+                        allQuantRecords.q_inputs.push(obj);
+                    }
                 }
             }
 
@@ -298,21 +300,27 @@ mnn.Node = class {
                 var index_o = net_.extraTensorDescribe.findIndex((element) => element.index === op.outputIndexes[o]);
                 if (index_o >= 0) {
                     const metaQuantInfo = net_.extraTensorDescribe[index_o].quantInfo;
-                    const obj = new Object();
-                    obj.name = net_.extraTensorDescribe[index_o].name;
-                    obj.qinfo = {};
-                    // obj.qinfo.dtype = mnn.Utility.dataType(metaQuantInfo.type);
-                    obj.qinfo.realtype = mnn.Utility.dataType(metaQuantInfo.realtype);
-                    obj.qinfo.scale = metaQuantInfo.scale;
-                    obj.qinfo.zero  = metaQuantInfo.zero;
-                    obj.qinfo.max   = metaQuantInfo.max;
-                    obj.qinfo.min   = metaQuantInfo.min;
-                    allQuantRecords.q_outputs.push(obj);
+                    if (metaQuantInfo) {
+                        const obj = new Object();
+                        obj.name = net_.extraTensorDescribe[index_o].name;
+                        obj.qinfo = {};
+                        // obj.qinfo.dtype = mnn.Utility.dataType(metaQuantInfo.type);
+                        obj.qinfo.realtype = mnn.Utility.dataType(metaQuantInfo.realtype);
+                        obj.qinfo.scale = metaQuantInfo.scale;
+                        obj.qinfo.zero  = metaQuantInfo.zero;
+                        obj.qinfo.max   = metaQuantInfo.max;
+                        obj.qinfo.min   = metaQuantInfo.min;
+                        allQuantRecords.q_outputs.push(obj);
+                    }
                 }
             }
         }
-        this._quantization.push(new mnn.Attribute(null, 'inputs', allQuantRecords.q_inputs));
-        this._quantization.push(new mnn.Attribute(null, 'outputs', allQuantRecords.q_outputs));
+        if (allQuantRecords.q_inputs.length > 0) {
+            this._quantization.push(new mnn.Attribute(null, 'inputs', allQuantRecords.q_inputs));
+        }
+        if (allQuantRecords.q_outputs.length > 0) {
+            this._quantization.push(new mnn.Attribute(null, 'outputs', allQuantRecords.q_outputs));
+        }
     }
 
     get type() {

@@ -198,8 +198,8 @@ const build = async (target) => {
             writeLine('build electron');
             install();
             exec('npx electron-builder install-app-deps');
-            exec('npx electron-builder --mac --universal --publish never -c.mac.identity=null');
-            exec('npx electron-builder --win --x64 --arm64 --publish never');
+            // exec('npx electron-builder --mac --universal --publish never -c.mac.identity=null');
+            // exec('npx electron-builder --win --x64 --arm64 --publish never');
             exec('npx electron-builder --linux appimage --x64 --publish never');
             exec('npx electron-builder --linux snap --x64 --publish never');
             break;

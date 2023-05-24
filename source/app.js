@@ -100,7 +100,7 @@ app.Application = class {
         });
 
         this._parseCommandLine(process.argv);
-        this._checkForUpdates();
+        // this._checkForUpdates();
     }
 
     get environment() {
