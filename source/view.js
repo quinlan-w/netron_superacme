@@ -2185,6 +2185,16 @@ view.NodeSidebar = class extends view.Control {
                 this._addOutput(output.name, output);
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(node, "_quantization")) {            
+            const quantization = node.quantization;
+            if (quantization && quantization.length > 0) {
+                this._addHeader('Quantization');
+                for (const q of quantization) {
+                    this._addAttribute(q.name, q);
+                }
+            }
+        }
     }
 
     render() {

@@ -32,7 +32,11 @@ $root.MNN.DataType = {
     DT_COMPLEX128: 18,
     DT_HALF: 19,
     DT_RESOURCE: 20,
-    DT_VARIANT: 21
+    DT_VARIANT: 21,
+    DT_INT4: 22,
+    DT_UINT4: 23,
+    DT_INT2: 24,
+    DT_INT1: 25
 };
 
 $root.MNN.MNN_DATA_FORMAT = {
@@ -56,7 +60,6 @@ $root.MNN.Blob = class Blob {
         $.int64s = reader.int64s_(position, 16);
         $.float32s = reader.typedArray(position, 18, Float32Array);
         $.strings = reader.strings_(position, 20);
-        $.external = reader.int64s_(position, 22);
         return $;
     }
 };
@@ -146,8 +149,6 @@ $root.MNN.Convolution3DCommon = class Convolution3DCommon {
         $.relu = reader.bool_(position, 18, false);
         $.relu6 = reader.bool_(position, 20, false);
         $.group = reader.int32_(position, 22, 1);
-        $.outPads = reader.typedArray(position, 24, Int32Array);
-        $.hasOutputShape = reader.bool_(position, 26, false);
         return $;
     }
 };
@@ -211,6 +212,19 @@ $root.MNN.QuantizedFloatParam = class QuantizedFloatParam {
     }
 };
 
+$root.MNN.Conv2dSuperAcmeQuantizedParam = class Conv2dSuperAcmeQuantizedParam {
+
+    static decode(reader, position) {
+        const $ = new $root.MNN.Conv2dSuperAcmeQuantizedParam();
+        $.mquantizeMultiplier = reader.typedArray(position, 4, Int32Array);
+        $.mRightShift = reader.typedArray(position, 6, Int32Array);
+        $.mintbias = reader.typedArray(position, 8, Int32Array);
+        $.mmode = reader.int32_(position, 10, 0);
+        $.weightType = reader.int32_(position, 12, 6);
+        return $;
+    }
+};
+
 $root.MNN.Convolution2D = class Convolution2D {
 
     static decode(reader, position) {
@@ -221,7 +235,7 @@ $root.MNN.Convolution2D = class Convolution2D {
         $.quanParameter = reader.table(position, 10, $root.MNN.IDSTQuan.decode);
         $.symmetricQuan = reader.table(position, 12, $root.MNN.QuantizedFloatParam.decode);
         $.sparseParameter = reader.table(position, 14, $root.MNN.SparseCommon.decode);
-        $.external = reader.int64s_(position, 16);
+        $.convolution2d_superacme = reader.table(position, 16, $root.MNN.Conv2dSuperAcmeQuantizedParam.decode);
         return $;
     }
 };
@@ -233,7 +247,6 @@ $root.MNN.Convolution3D = class Convolution3D {
         $.common = reader.table(position, 4, $root.MNN.Convolution3DCommon.decode);
         $.weight = reader.typedArray(position, 6, Float32Array);
         $.bias = reader.typedArray(position, 8, Float32Array);
-        $.external = reader.int64s_(position, 10);
         return $;
     }
 };
@@ -440,7 +453,6 @@ $root.MNN.Scale = class Scale {
         $.channels = reader.int32_(position, 4, 0);
         $.scaleData = reader.typedArray(position, 6, Float32Array);
         $.biasData = reader.typedArray(position, 8, Float32Array);
-        $.external = reader.int64s_(position, 10);
         return $;
     }
 };
@@ -519,7 +531,6 @@ $root.MNN.RoiParameters = class RoiParameters {
         $.samplingRatio = reader.int32_(position, 10, -1);
         $.aligned = reader.bool_(position, 12, false);
         $.poolType = reader.int8_(position, 14, 1);
-        $.outputGrad = reader.bool_(position, 16, false);
         return $;
     }
 };
@@ -566,9 +577,6 @@ $root.MNN.Interp = class Interp {
         $.heightOffset = reader.float32_(position, 20, 0);
         $.cubicCoeffA = reader.float32_(position, 22, -0.75);
         $.ctm = reader.int8_(position, 24, 0);
-        $.depthScale = reader.float32_(position, 26, 0);
-        $.outputDepth = reader.int32_(position, 28, 0);
-        $.depthOffset = reader.float32_(position, 30, 0);
         return $;
     }
 };
@@ -673,7 +681,6 @@ $root.MNN.BinaryOp = class BinaryOp {
         const $ = new $root.MNN.BinaryOp();
         $.opType = reader.int32_(position, 4, 0);
         $.T = reader.int32_(position, 6, 1);
-        $.activationType = reader.int32_(position, 8, 0);
         return $;
     }
 };
@@ -699,7 +706,6 @@ $root.MNN.StridedSliceParam = class StridedSliceParam {
         $.ellipsisMask = reader.int32_(position, 12, 0);
         $.newAxisMask = reader.int32_(position, 14, 0);
         $.shrinkAxisMask = reader.int32_(position, 16, 0);
-        $.fromType = reader.int32_(position, 18, 0);
         return $;
     }
 };
@@ -987,6 +993,7 @@ $root.MNN.MatMul = class MatMul {
         $.transposeB = reader.bool_(position, 8, false);
         $.weight = reader.typedArray(position, 10, Float32Array);
         $.bias = reader.typedArray(position, 12, Float32Array);
+        $.weightname = reader.string_(position, 14, null);
         return $;
     }
 };
@@ -1110,7 +1117,6 @@ $root.MNN.LayerNorm = class LayerNorm {
         $.gamma = reader.typedArray(position, 8, Float32Array);
         $.beta = reader.typedArray(position, 10, Float32Array);
         $.group = reader.int32_(position, 12, 1);
-        $.external = reader.int64s_(position, 14);
         return $;
     }
 };
@@ -1485,7 +1491,7 @@ $root.MNN.OpType = {
     AsString: 3,
     InstanceNorm: 4,
     BatchToSpaceND: 5,
-    Copy: 6,
+    Bias: 6,
     BinaryOp: 7,
     Bnll: 8,
     Cast: 9,
@@ -1601,7 +1607,6 @@ $root.MNN.OpType = {
     OneHot: 119,
     BroadcastTo: 120,
     Dilation2D: 121,
-    Interp3D: 122,
     Raster: 128,
     ConvertTensor: 129,
     ArgMin: 130,
@@ -1635,14 +1640,13 @@ $root.MNN.OpType = {
     Broastcast: 259,
     SetDiff1D: 260,
     ReluGrad: 261,
-    Identity: 262,
+    Relu6Grad: 262,
     PoolGrad: 263,
     SoftmaxGrad: 264,
     Conv2DBackPropFilter: 265,
     TrainableParam: 266,
     BatchNorm: 267,
-    ConvTranspose3D: 268,
-    ZeroGrad: 269,
+    ZeroGrad: 268,
     Extra: 512,
     ConvInt8: 513,
     Int8ToFloat: 514,
@@ -1734,11 +1738,11 @@ $root.MNN.LoopParam = class LoopParam {
         $.tensorNumber = reader.int32_(position, 4, 0);
         $.outputIndexes = reader.typedArray(position, 6, Int32Array);
         $.inputIndexes = reader.typedArray(position, 8, Int32Array);
-        $.extraTensorInfos = reader.tableArray(position, 10, $root.MNN.TensorDescribe.decode);
+        $.midTensors = reader.tableArray(position, 10, $root.MNN.TensorDescribe.decode);
         $.parallel = reader.bool_(position, 12, true);
         $.loopNumber = reader.int32_(position, 14, 0);
         $.commands = reader.tableArray(position, 16, $root.MNN.RegionCommand.decode);
-        $.initCommand = reader.tableArray(position, 18, $root.MNN.RegionCommand.decode);
+        $.is_binary = reader.bool_(position, 18, false);
         return $;
     }
 };
@@ -1932,6 +1936,7 @@ $root.MNN.TensorQuantInfo = class TensorQuantInfo {
         $.min = reader.float32_(position, 8, -128);
         $.max = reader.float32_(position, 10, 127);
         $.type = reader.int32_(position, 12, 0);
+        $.realtype = reader.int32_(position, 14, 0);
         return $;
     }
 };
